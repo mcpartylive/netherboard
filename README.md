@@ -99,7 +99,7 @@ dependencies {
   <!--
   Or if you use Sponge:
   
-  <artifactId>netherboard-sponge</artifactId>
+  <artifactId>netherboard-minestom</artifactId>
   -->
   
   <version>1.2.2</version>

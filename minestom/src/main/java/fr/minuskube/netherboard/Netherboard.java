@@ -1,15 +1,14 @@
 package fr.minuskube.netherboard;
 
-import fr.minuskube.netherboard.sponge.SPlayerBoard;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.scoreboard.Scoreboard;
-import org.spongepowered.api.text.Text;
+import fr.minuskube.netherboard.minestom.MPlayerBoard;
+import net.minestom.server.entity.Player;
+import net.minestom.server.scoreboard.Scoreboard;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The main class of the Netherboard API for Sponge,
+ * The main class of the Netherboard API for Minestom,
  * you'll need to use it if you want to create boards.
  *
  * To create a board, get the instance using <code>Netherboard.instance()</code>
@@ -19,7 +18,7 @@ public class Netherboard {
 
     private static Netherboard instance;
 
-    private final Map<Player, SPlayerBoard> boards = new HashMap<>();
+    private final Map<Player, MPlayerBoard> boards = new HashMap<>();
 
     private Netherboard() {}
 
@@ -30,7 +29,7 @@ public class Netherboard {
      * @param name      the name of the board
      * @return          the newly created board
      */
-    public SPlayerBoard createBoard(Player player, Text name) {
+    public MPlayerBoard createBoard(Player player, String name) {
         return createBoard(player, null, name);
     }
 
@@ -42,10 +41,10 @@ public class Netherboard {
      * @param name          the name of the board
      * @return              the newly created board
      */
-    public SPlayerBoard createBoard(Player player, Scoreboard scoreboard, Text name) {
+    public MPlayerBoard createBoard(Player player, Scoreboard scoreboard, String name) {
         deleteBoard(player);
 
-        SPlayerBoard board = new SPlayerBoard(player, scoreboard, name);
+        MPlayerBoard board = new MPlayerBoard(player, scoreboard, name);
 
         boards.put(player, board);
         return board;
@@ -67,8 +66,8 @@ public class Netherboard {
      *
      * @param player the player
      */
-    public void removeBoard(Player player) {
-        boards.remove(player);
+    public void removeBoard(Scoreboard scoreboard) {
+        boards.remove(scoreboard);
     }
 
     /**
@@ -87,7 +86,7 @@ public class Netherboard {
      * @param player    the player
      * @return          the player board, or null if the player has no board
      */
-    public SPlayerBoard getBoard(Player player) {
+    public MPlayerBoard getBoard(Player player) {
         return boards.get(player);
     }
 
@@ -98,7 +97,7 @@ public class Netherboard {
      *
      * @return a new map with all the player boards
      */
-    public Map<Player, SPlayerBoard> getBoards() {
+    public Map<Player, MPlayerBoard> getBoards() {
         return new HashMap<>(boards);
     }
 
@@ -108,8 +107,9 @@ public class Netherboard {
      * @return the instance
      */
     public static Netherboard instance() {
-        if(instance == null)
+        if(instance == null) {
             instance = new Netherboard();
+        }
 
         return instance;
     }
