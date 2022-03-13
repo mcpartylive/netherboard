@@ -2,7 +2,7 @@ package fr.minuskube.netherboard;
 
 import fr.minuskube.netherboard.minestom.MPlayerBoard;
 import net.minestom.server.entity.Player;
-import net.minestom.server.scoreboard.Scoreboard;
+import net.minestom.server.scoreboard.Sidebar;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +41,7 @@ public class Netherboard {
      * @param name          the name of the board
      * @return              the newly created board
      */
-    public MPlayerBoard createBoard(Player player, Scoreboard scoreboard, String name) {
+    public MPlayerBoard createBoard(Player player, Sidebar scoreboard, String name) {
         deleteBoard(player);
 
         MPlayerBoard board = new MPlayerBoard(player, scoreboard, name);
@@ -64,9 +64,9 @@ public class Netherboard {
      * Removes the board of a player from the boards map.<br>
      * <b>WARNING: Do not use this to delete the board of a player!</b>
      *
-     * @param player the player
+     * @param scoreboard the sidebar to remove
      */
-    public void removeBoard(Scoreboard scoreboard) {
+    public void removeBoard(Sidebar scoreboard) {
         boards.remove(scoreboard);
     }
 

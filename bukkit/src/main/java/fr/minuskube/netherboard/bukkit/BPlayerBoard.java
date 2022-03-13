@@ -3,6 +3,7 @@ package fr.minuskube.netherboard.bukkit;
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.api.PlayerBoard;
 import fr.minuskube.netherboard.bukkit.util.NMS;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
@@ -16,14 +17,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
+public class BPlayerBoard implements PlayerBoard<String, Integer, Component> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BPlayerBoard.class);
 
     private Player player;
     private Scoreboard scoreboard;
 
-    private String name;
+    private Component name;
 
     private Objective objective;
     private Objective buffer;
@@ -32,11 +33,11 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
 
     private boolean deleted = false;
 
-    public BPlayerBoard(Player player, String name) {
+    public BPlayerBoard(Player player, Component name) {
         this(player, null, name);
     }
 
-    public BPlayerBoard(Player player, Scoreboard scoreboard, String name) {
+    public BPlayerBoard(Player player, Scoreboard scoreboard, Component name) {
         this.player = player;
         this.scoreboard = scoreboard;
 
@@ -63,11 +64,11 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
         if(this.buffer == null)
             this.buffer = this.scoreboard.registerNewObjective("bf" + subName, "dummy");
 
-        this.objective.setDisplayName(name);
+        this.objective.displayName(name);
         sendObjective(this.objective, ObjectiveMode.CREATE);
         sendObjectiveDisplay(this.objective);
 
-        this.buffer.setDisplayName(name);
+        this.buffer.displayName(name);
         sendObjective(this.buffer, ObjectiveMode.CREATE);
 
         this.player.setScoreboard(this.scoreboard);
@@ -309,19 +310,19 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
     }
 
     @Override
-    public String getName() {
+    public Component getName() {
         return name;
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(Component name) {
         if(this.deleted)
             throw new IllegalStateException("The PlayerBoard is deleted!");
 
         this.name = name;
 
-        this.objective.setDisplayName(name);
-        this.buffer.setDisplayName(name);
+        this.objective.displayName(name);
+        this.buffer.displayName(name);
 
         sendObjective(this.objective, ObjectiveMode.UPDATE);
         sendObjective(this.buffer, ObjectiveMode.UPDATE);
