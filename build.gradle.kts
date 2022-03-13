@@ -63,37 +63,3 @@ project(":core") {
         archiveBaseName.set("netherboard-core")
     }
 }
-
-project(":bukkit") {
-    tasks.jar {
-        archiveFileName.set("Netherboard-Bukkit-" + project.version + ".jar")
-        archiveBaseName.set("netherboard-bukkit")
-    }
-
-    repositories {
-        maven("https://papermc.io/repo/repository/maven-public/")
-        maven("https://oss.sonatype.org/content/repositories/snapshots")
-    }
-
-    dependencies {
-        compileOnly("io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT")
-        implementation(project(":core"))
-    }
-}
-
-project(":minestom") {
-    tasks.jar {
-        archiveFileName.set("Netherboard-minestom-" + project.version + ".jar")
-        archiveBaseName.set("netherboard-minestom")
-    }
-
-    repositories {
-        maven("https://repo.spongepowered.org/maven")
-        maven("https://jitpack.io")
-    }
-
-    dependencies {
-        compileOnly("com.github.Minestom:Minestom:4ab2f43eed")
-        implementation(project(":core"))
-    }
-}
