@@ -1,6 +1,6 @@
 plugins {
     `maven-publish`
-    `java`
+    java
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
@@ -11,6 +11,7 @@ subprojects {
     apply {
         plugin("com.github.johnrengelman.shadow")
         plugin("java")
+        plugin("maven-publish")
     }
 
     repositories {
@@ -30,6 +31,28 @@ subprojects {
     java {
         withSourcesJar()
         withJavadocJar()
+    }
+
+    publishing {
+        repositories {
+            maven {
+                url = uri("https://repo.mcparty.live/packages/")
+                credentials {
+                    username = project.findProperty("mcp.user") as? String ?: System.getenv("REPO_USERNAME")
+                    password = project.findProperty("mcp.key") as? String ?: System.getenv("REPO_TOKEN")
+                }
+            }
+        }
+
+        publications {
+            create<MavenPublication>(project.name) {
+                groupId = "live.mcparty"
+                artifactId = "netherboard-${project.name}"
+                version = "2.0.0"
+
+                from(components["java"])
+            }
+        }
     }
 
 }
@@ -72,24 +95,5 @@ project(":minestom") {
     dependencies {
         compileOnly("com.github.Minestom:Minestom:4ab2f43eed")
         implementation(project(":core"))
-    }
-}
-
-
-publishing {
-    repositories {
-        maven {
-            url = uri("https://repo.mcparty.live/packages/")
-            credentials {
-                username = project.findProperty("mcp.user") as? String ?: System.getenv("REPO_USERNAME")
-                password = project.findProperty("mcp.key") as? String ?: System.getenv("REPO_TOKEN")
-            }
-        }
-    }
-
-    publications {
-        create<MavenPublication>("mcp") {
-            from(components["java"])
-        }
     }
 }
