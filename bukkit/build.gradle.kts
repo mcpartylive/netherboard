@@ -5,6 +5,7 @@ plugins {
 tasks.jar {
     archiveFileName.set("Netherboard-Bukkit-" + project.version + ".jar")
     archiveBaseName.set("netherboard-bukkit")
+    archiveSuffix.set("")
 }
 
 repositories {
@@ -15,5 +16,5 @@ repositories {
 
 dependencies {
     paperDevBundle("1.18.2-R0.1-SNAPSHOT")
-    implementation(project(":core"))
+    shadow(project(":core"))
 }
