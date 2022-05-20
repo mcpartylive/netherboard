@@ -5,7 +5,7 @@ plugins {
 tasks.jar {
     archiveFileName.set("Netherboard-Bukkit-" + project.version + ".jar")
     archiveBaseName.set("netherboard-bukkit")
-    archiveSuffix.set("")
+    archiveClassifier.set("")
 }
 
 repositories {
