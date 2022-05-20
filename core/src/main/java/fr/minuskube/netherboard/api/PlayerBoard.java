@@ -1,5 +1,6 @@
 package fr.minuskube.netherboard.api;
 
+import java.util.List;
 import java.util.Map;
 
 public interface PlayerBoard<V, N, S> {
@@ -31,6 +32,16 @@ public interface PlayerBoard<V, N, S> {
      */
     @SuppressWarnings("unchecked")
     void setAll(V... lines);
+
+    /**
+     * Sets all the lines of the scoreboard.
+     * This will clear all of the current board lines, then set
+     * all of the given lines, from top to down, by giving them each a score
+     * determined by {@code lines.length - index}.
+     *
+     * @param lines the new board lines
+     */
+    void setAll(List<V> lines);
 
     /**
      * Clears all the lines of the scoreboard.
@@ -70,5 +81,12 @@ public interface PlayerBoard<V, N, S> {
      * @return the lines of the board
      */
     Map<N, V> getLines();
+
+    /**
+     * Gets whether the board is deleted or not.
+     *
+     * @return whether the board is deleted
+     */
+    boolean isDeleted();
 
 }

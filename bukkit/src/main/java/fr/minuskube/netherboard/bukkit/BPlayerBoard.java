@@ -3,6 +3,9 @@ package fr.minuskube.netherboard.bukkit;
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.api.PlayerBoard;
 import fr.minuskube.netherboard.bukkit.util.NMS;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
@@ -11,42 +14,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
+@SuppressWarnings("unused")
+public class BPlayerBoard implements PlayerBoard<Component, Integer, Component> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BPlayerBoard.class);
 
-    private Player player;
+    private final Player player;
     private Scoreboard scoreboard;
 
-    private String name;
+    private Component name;
 
     private Objective objective;
     private Objective buffer;
 
-    private Map<Integer, String> lines = new HashMap<>();
+    private Map<Integer, Component> lines = new HashMap<>();
 
     private boolean deleted = false;
 
-    public BPlayerBoard(Player player, String name) {
+    public BPlayerBoard(Player player, Component name) {
         this(player, null, name);
     }
 
-    public BPlayerBoard(Player player, Scoreboard scoreboard, String name) {
+    @SuppressWarnings({"deprecation"})
+    public BPlayerBoard(Player player, Scoreboard scoreboard, Component name) {
         this.player = player;
         this.scoreboard = scoreboard;
 
         if(this.scoreboard == null) {
-            Scoreboard sb = player.getScoreboard();
-
-            if(sb == null || sb == Bukkit.getScoreboardManager().getMainScoreboard())
-                sb = Bukkit.getScoreboardManager().getNewScoreboard();
-
-            this.scoreboard = sb;
+            this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         }
 
         this.name = name;
@@ -63,18 +60,18 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
         if(this.buffer == null)
             this.buffer = this.scoreboard.registerNewObjective("bf" + subName, "dummy");
 
-        this.objective.setDisplayName(name);
+        this.objective.displayName(name);
         sendObjective(this.objective, ObjectiveMode.CREATE);
         sendObjectiveDisplay(this.objective);
 
-        this.buffer.setDisplayName(name);
+        this.buffer.displayName(name);
         sendObjective(this.buffer, ObjectiveMode.CREATE);
 
         this.player.setScoreboard(this.scoreboard);
     }
 
     @Override
-    public String get(Integer score) {
+    public Component get(Integer score) {
         if(this.deleted)
             throw new IllegalStateException("The PlayerBoard is deleted!");
 
@@ -82,17 +79,23 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
     }
 
     @Override
-    public void set(String name, Integer score) {
+    public void set(Component name, Integer score) {
         if(this.deleted)
             throw new IllegalStateException("The PlayerBoard is deleted!");
 
-        String oldName = this.lines.get(score);
+        Component oldName = this.lines.get(score);
 
         if(name.equals(oldName))
             return;
 
         this.lines.entrySet()
                 .removeIf(entry -> entry.getValue().equals(name));
+
+        if (this.lines.get(score) != null)
+            remove(score);
+
+        this.objective.displayName(name);
+        this.buffer.displayName(name);
 
         if(oldName != null) {
             if(NMS.getVersion().getMajor().equals("1.7")) {
@@ -118,12 +121,12 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
     }
 
     @Override
-    public void setAll(String... lines) {
+    public void setAll(Component... lines) {
         if(this.deleted)
             throw new IllegalStateException("The PlayerBoard is deleted!");
 
         for(int i = 0; i < lines.length; i++) {
-            String line = lines[i];
+            Component line = lines[i];
 
             set(line, lines.length - i);
         }
@@ -131,6 +134,25 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
         Set<Integer> scores = new HashSet<>(this.lines.keySet());
         for (int score : scores) {
             if (score <= 0 || score > lines.length) {
+                remove(score);
+            }
+        }
+    }
+
+    @Override
+    public void setAll(List<Component> lines) {
+        if(this.deleted)
+            throw new IllegalStateException("The PlayerBoard is deleted!");
+
+        for(int i = 0; i < lines.size(); i++) {
+            Component line = lines.get(i);
+
+            set(line, lines.size() - i);
+        }
+
+        Set<Integer> scores = new HashSet<>(this.lines.keySet());
+        for (int score : scores) {
+            if (score <= 0 || score > lines.size()) {
                 remove(score);
             }
         }
@@ -186,15 +208,17 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void sendScore(Objective obj, String name, int score, boolean remove) {
+    private void sendScore(Objective obj, Component name, int score, boolean remove) {
         try {
+            if (obj == null) return;
+
             Object sbHandle = NMS.getHandle(scoreboard);
             Object objHandle = NMS.getHandle(obj);
 
             Object sbScore = NMS.SB_SCORE.newInstance(
                     sbHandle,
                     objHandle,
-                    name
+                    PlainTextComponentSerializer.plainText().serialize(name)
             );
 
             NMS.SB_SCORE_SET.invoke(sbScore, score);
@@ -202,8 +226,9 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
             Map scores = (Map) NMS.PLAYER_SCORES.get(sbHandle);
 
             if(remove) {
-                if(scores.containsKey(name))
+                if(scores.containsKey(name)) {
                     ((Map) scores.get(name)).remove(objHandle);
+                }
             }
             else {
                 if(!scores.containsKey(name))
@@ -212,50 +237,39 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
                 ((Map) scores.get(name)).put(objHandle, sbScore);
             }
 
-            switch(NMS.getVersion().getMajor()) {
-                case "1.7": {
+            switch (NMS.getVersion().getMajor()) {
+                case "1.7" -> {
                     Object packet = NMS.PACKET_SCORE.newInstance(
-                            sbScore,
-                            remove ? 1 : 0
+                        sbScore,
+                        remove ? 1 : 0
                     );
 
                     NMS.sendPacket(packet, player);
-                    break;
                 }
-
-                case "1.8":
-                case "1.9":
-                case "1.10":
-                case "1.11":
-                case "1.12": {
+                case "1.8", "1.9", "1.10", "1.11", "1.12" -> {
                     Object packet;
 
-                    if(remove) {
+                    if (remove) {
                         packet = NMS.PACKET_SCORE_REMOVE.newInstance(
-                                name,
-                                objHandle
+                            name,
+                            objHandle
                         );
-                    }
-                    else {
+                    } else {
                         packet = NMS.PACKET_SCORE.newInstance(
-                                sbScore
+                            sbScore
                         );
                     }
 
                     NMS.sendPacket(packet, player);
-                    break;
                 }
-
-                default: {
+                default -> {
                     Object packet = NMS.PACKET_SCORE.newInstance(
-                            remove ? NMS.ENUM_SCORE_ACTION_REMOVE : NMS.ENUM_SCORE_ACTION_CHANGE,
-                            obj.getName(),
-                            name,
-                            score
+                        remove ? NMS.ENUM_SCORE_ACTION_REMOVE : NMS.ENUM_SCORE_ACTION_CHANGE,
+                        obj.getName(), LegacyComponentSerializer.legacySection().serialize(name),
+                        score
                     );
 
                     NMS.sendPacket(packet, player);
-                    break;
                 }
             }
         } catch(InstantiationException | IllegalAccessException
@@ -270,12 +284,12 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
         if(this.deleted)
             throw new IllegalStateException("The PlayerBoard is deleted!");
 
-        String name = this.lines.get(score);
+        Component name = this.lines.get(score);
 
         if(name == null)
             return;
 
-        this.scoreboard.resetScores(name);
+        this.scoreboard.resetScores(player);
         this.lines.remove(score);
     }
 
@@ -295,13 +309,16 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
         this.buffer.unregister();
         this.buffer = null;
 
+        this.lines.forEach((score, name) -> sendScore(this.objective, name, score, true));
+        clear();
         this.lines = null;
 
+        this.player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
         this.deleted = true;
     }
 
     @Override
-    public Map<Integer, String> getLines() {
+    public Map<Integer, Component> getLines() {
         if(this.deleted)
             throw new IllegalStateException("The PlayerBoard is deleted!");
 
@@ -309,19 +326,19 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
     }
 
     @Override
-    public String getName() {
+    public Component getName() {
         return name;
     }
 
     @Override
-    public void setName(String name) {
+    public void setName(Component name) {
         if(this.deleted)
             throw new IllegalStateException("The PlayerBoard is deleted!");
 
         this.name = name;
 
-        this.objective.setDisplayName(name);
-        this.buffer.setDisplayName(name);
+        this.objective.displayName(name);
+        this.buffer.displayName(name);
 
         sendObjective(this.objective, ObjectiveMode.UPDATE);
         sendObjective(this.buffer, ObjectiveMode.UPDATE);
@@ -335,5 +352,10 @@ public class BPlayerBoard implements PlayerBoard<String, Integer, String> {
 
 
     private enum ObjectiveMode { CREATE, REMOVE, UPDATE }
+
+    @Override
+    public boolean isDeleted() {
+        return deleted;
+    }
 
 }
