@@ -1,5 +1,6 @@
 plugins {
     `maven-publish`
+    `java-library`
     java
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
@@ -11,6 +12,7 @@ subprojects {
     apply {
         plugin("com.github.johnrengelman.shadow")
         plugin("java")
+        plugin("java-library")
         plugin("maven-publish")
     }
 
@@ -56,6 +58,8 @@ subprojects {
         }
     }
 
+    configurations.named("api").isCanBeResolved = true
+    configurations.named("api").extendsFrom(configurations.named("shadow").get())
 }
 
 project(":core") {
