@@ -7,7 +7,7 @@ plugins {
 
 subprojects {
     group = "live.mcparty"
-    version = "2.1.3"
+    version = "2.2.1"
 
     apply {
         plugin("com.github.johnrengelman.shadow")
@@ -51,7 +51,6 @@ subprojects {
             create<MavenPublication>(project.name) {
                 groupId = "live.mcparty"
                 artifactId = "netherboard-${project.name}"
-                version = "2.1.1"
 
                 from(components["java"])
             }

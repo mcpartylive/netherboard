@@ -1,7 +1,3 @@
-plugins {
-    id("io.papermc.paperweight.userdev") version "1.3.5"
-}
-
 tasks.jar {
     archiveFileName.set("Netherboard-Bukkit-" + project.version + ".jar")
     archiveBaseName.set("netherboard-bukkit")
@@ -15,6 +11,6 @@ repositories {
 }
 
 dependencies {
-    paperDevBundle("1.18.2-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT")
     shadow(project(":core"))
 }
