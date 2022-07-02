@@ -1,0 +1,20 @@
+# https://docs.github.com/en/code-security/dependabot
+
+version: 2
+registries:
+  party-repo:
+    type: maven-repository
+    url: https://repo.mcparty.live/packages
+    username: mcpartybot
+    password: ${{secrets.REPO_TOKEN}}
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/" 
+    registries:
+      - party-repo
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
