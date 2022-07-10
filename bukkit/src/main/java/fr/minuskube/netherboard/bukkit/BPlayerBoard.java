@@ -133,7 +133,7 @@ public class BPlayerBoard implements PlayerBoard<Component, Integer, Component> 
 
         Set<Integer> scores = new HashSet<>(this.lines.keySet());
         for (int score : scores) {
-            if (score <= 0 || score > lines.length) {
+            if (score >= 0 || score > lines.length) {
                 remove(score);
             }
         }
@@ -152,7 +152,7 @@ public class BPlayerBoard implements PlayerBoard<Component, Integer, Component> 
 
         Set<Integer> scores = new HashSet<>(this.lines.keySet());
         for (int score : scores) {
-            if (score <= 0 || score > lines.size()) {
+            if (score >= 0 || score > lines.size()) {
                 remove(score);
             }
         }
