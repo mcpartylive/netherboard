@@ -88,8 +88,7 @@ public class BPlayerBoard implements PlayerBoard<Component, Integer, Component> 
         if(name.equals(oldName))
             return;
 
-        this.lines.entrySet()
-                .removeIf(entry -> entry.getValue().equals(name));
+        this.lines.entrySet().removeIf(entry -> entry.getValue().equals(name));
 
         if (this.lines.get(score) != null)
             remove(score);
@@ -133,7 +132,7 @@ public class BPlayerBoard implements PlayerBoard<Component, Integer, Component> 
 
         Set<Integer> scores = new HashSet<>(this.lines.keySet());
         for (int score : scores) {
-            if (score >= 0 || score > lines.length) {
+            if (score <= 0 || score > lines.length) {
                 remove(score);
             }
         }
@@ -152,7 +151,7 @@ public class BPlayerBoard implements PlayerBoard<Component, Integer, Component> 
 
         Set<Integer> scores = new HashSet<>(this.lines.keySet());
         for (int score : scores) {
-            if (score >= 0 || score > lines.size()) {
+            if (score <= 0 || score > lines.size()) {
                 remove(score);
             }
         }
